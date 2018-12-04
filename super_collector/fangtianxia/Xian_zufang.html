@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<!--重要meta, 必须!-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0,shrink-to-fit=no"/>
+<title>SUBWAY</title>
+</head>
+<body>
+<div id="mysubway"></div>
+
+<script src="https://webapi.amap.com/subway?v=1.0&amp;key=7d799c77bcfead3b09741cf98a1956d5&amp;callback=cbk"></script>
+<script type="text/javascript">
+
+    //开启easy模式, 直接完成地铁图基本功能, 无需自己写交互
+    window.cbk = function(){
+
+        var mySubway = subway("mysubway", {
+            adcode: 4201,
+            theme: "colorful",
+            client: 0,
+            doubleclick: {
+                switch: true
+            }
+        });
+
+        //地铁加载完成，执行complete事件
+        mySubway.event.on("subway.complete", function(ev, info) {
+            var id = info.id;
+        });
+
+        //点击站点，显示此站点的信息窗体
+        mySubway.event.on("station.touch", function(ev, info) {
+            var id = info.id;
+            mySubway.stopAnimation();
+            mySubway.addInfoWindow(id, {});
+            var center = mySubway.getStCenter(id);
+            mySubway.setCenter(center);
+        });
+
+        //点击线路名，高亮此线路
+        mySubway.event.on("lineName.touch", function(ev, info) {
+            mySubway.showLine(info.id);
+            var select_obj = qs('#g-select');
+            mySubway.setFitView(select_obj);
+            var center = mySubway.getSelectedLineCenter();
+            mySubway.setCenter(center);
+        });
+
+        //点击空白, 关闭infowindow
+        mySubway.event.on("subway.touch", function() {
+            mySubway.clearInfoWindow();
+        });
+
+        //设置起点
+        mySubway.event.on("startStation.touch", function(ev, info) {
+            mySubway.stopAnimation();
+            mySubway.clearInfoWindow();
+            mySubway.setStart(info.id, {});
+            startInfo = info;
+            route();
+        });
+
+        //设置终点
+        mySubway.event.on("endStation.touch", function(ev, info) {
+            mySubway.stopAnimation();
+            mySubway.clearInfoWindow();
+            mySubway.setEnd(info.id, {});
+            endInfo = info;
+            route();
+        });
+
+        //路线规划
+        var startInfo = {},
+            endInfo = {};
+        function route() {
+            if (startInfo.id && endInfo.id) {
+                mySubway.route(startInfo.id, endInfo.id, {});
+                startInfo = {};
+                endInfo = {};
+            }
+        }
+
+    };
+
+
+
+</script>
+</body>
+</html>
